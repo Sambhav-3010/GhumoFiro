@@ -43,7 +43,7 @@ router.post(
       end_date: trip.end_date,
       overall_budget: trip.overall_budget,
     })));
-    
+
     const updateUser = await User.findByIdAndUpdate(req.user._id, {
       $push: {
         placesVisited: { $each: addTrip.map(trip => trip.place_of_visit) }
@@ -70,14 +70,14 @@ router.get(
   "/history",
   protect,
   asyncHandler(async (req, res) => {
-    try{
+    try {
       const userId = req.user._id;
-      const trips = await history.find({userId})
+      const trips = await history.find({ userId })
       res.status(200).json(trips);
     } catch {
-      res.status(404).json({error : "No trips exists"});
+      res.status(404).json({ error: "No trips exists" });
     }
-    
+
   })
 );
 
@@ -97,7 +97,6 @@ router.post(
       activities
     } = req.body;
 
-    // Input validation for creating a new trip
     if (!place_of_visit || typeof place_of_visit !== 'string') {
       res.status(400);
       throw new Error('place_of_visit (string) is required.');
@@ -122,7 +121,6 @@ router.post(
       res.status(400);
       throw new Error('total_spent (non-negative number) is required.');
     }
-    // Optional array fields validation
     if (travel && !Array.isArray(travel)) {
       res.status(400);
       throw new Error('travel must be an array if provided.');

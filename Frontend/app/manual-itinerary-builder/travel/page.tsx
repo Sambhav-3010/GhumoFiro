@@ -159,42 +159,39 @@ export default function TravelPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-500 via-red-600 to-orange-500">
-      {/* Header */}
-      <div className="bg-black p-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
+      <div className="bg-black p-3 md:p-4">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2 md:gap-4">
             <Button
               onClick={() => router.push("/manual-itinerary-builder")}
-              className="bg-white hover:bg-gray-100 text-black font-bold border-2 border-white"
+              className="bg-white hover:bg-gray-100 text-black font-bold border-2 border-white text-xs md:text-sm px-2 md:px-4"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              BACK
+              <ArrowLeft className="w-4 h-4 md:mr-2" />
+              <span className="hidden md:inline">BACK</span>
             </Button>
-            <div className="text-white text-2xl font-bold">
+            <div className="text-white text-base md:text-2xl font-bold">
               TRAVEL SELECTION
             </div>
           </div>
           <Button
             onClick={handleContinue}
-            className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold border-2 border-white"
+            className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold border-2 border-white text-xs md:text-sm"
           >
             CONTINUE TO HOTELS →
           </Button>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6">
-        <div className="grid lg:grid-cols-2 gap-6">
-          {/* Available Travel Options */}
-          <div className="space-y-6">
-            <div className="bg-white border-4 border-black p-6">
+      <div className="max-w-7xl mx-auto p-4 md:p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white border-4 border-black p-4 md:p-6">
               <h3 className="text-lg font-black text-black mb-4 uppercase flex items-center gap-2">
                 <Plane className="w-5 h-5" />
                 Available Travel Options
               </h3>
 
-              {/* Search Controls */}
-              <div className="flex gap-2 mb-4">
+              <div className="flex flex-col sm:flex-row gap-2 mb-4">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black w-5 h-5" />
                   <Input
@@ -219,8 +216,7 @@ export default function TravelPage() {
                 </Select>
               </div>
 
-              {/* Results */}
-              <div className="space-y-3 max-h-96 overflow-y-auto">
+              <div className="space-y-3 max-h-64 md:max-h-96 overflow-y-auto">
                 {getFilteredResults().map((item) => (
                   <div
                     key={item.id}
@@ -266,8 +262,7 @@ export default function TravelPage() {
             </div>
           </div>
 
-          {/* Selected Travel */}
-          <div className="bg-white border-4 border-black p-6">
+          <div className="bg-white border-4 border-black p-4 md:p-6">
             <h3 className="text-lg font-black text-black mb-4 uppercase">
               Your Selected Travel
             </h3>
@@ -284,11 +279,10 @@ export default function TravelPage() {
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3 flex-1">
                         <div
-                          className={`w-8 h-8 border-2 border-black flex items-center justify-center flex-shrink-0 ${
-                            item.type === "flight"
+                          className={`w-8 h-8 border-2 border-black flex items-center justify-center flex-shrink-0 ${item.type === "flight"
                               ? "bg-blue-500"
                               : "bg-green-500"
-                          }`}
+                            }`}
                         >
                           {item.type === "flight" ? (
                             <Plane className="w-4 h-4 text-white" />

@@ -11,13 +11,12 @@ const createToken = (userId) => {
   return jwt.sign({ userId }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 };
 
-// Helper for setting cookies
 const setAuthCookie = (res, token) => {
   res.cookie("token", token, {
     httpOnly: true,
-    secure: true,             // must be true if frontend is on https
-    sameSite: "none",         // required for cross-site cookies
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    secure: true,
+    sameSite: "none",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 };
 
@@ -189,19 +188,16 @@ const socialLogin = asyncHandler(async (req, res) => {
   }
 
   if (!user) {
-    // If no user found by googleId or email, create a new user
     user = await User.create({
       f_name: f_name.trim(),
       l_name: l_name.trim(),
       email: email.toLowerCase(),
-      googleId: googleId || null, // Store googleId if available
+      googleId: googleId || null,
       numberOfTrips: 0,
       placesVisited: [],
       recentlyVisited: null,
-      // Password is not required for social login users according to schema
     });
   } else if (!user.googleId && googleId) {
-    // If user exists by email but doesn't have googleId, update it
     user.googleId = googleId;
     await user.save();
   }

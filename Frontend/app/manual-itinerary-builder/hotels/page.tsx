@@ -25,7 +25,7 @@ interface HotelItem {
   location: string;
 }
 
-// Utility to parse "₹6,500" => 6500
+
 const parsePrice = (val: any): number => {
   if (typeof val === "number") return val;
   if (!val) return 0;
@@ -108,7 +108,7 @@ export default function HotelsPage() {
     };
 
     fetchHotels();
-  }, [adults]); // re-fetch when adults changes
+  }, [adults]);
 
   const handleAddHotel = (item: HotelItem) => {
     const updated = [...selectedHotels, { ...item, id: `${item.id}-${Date.now()}` }];
@@ -151,29 +151,28 @@ export default function HotelsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-500 via-red-600 to-orange-500">
-      {/* Header */}
-      <div className="bg-black p-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
+      <div className="bg-black p-3 md:p-4">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2 md:gap-4">
             <Button
               onClick={() => router.push("/manual-itinerary-builder")}
-              className="bg-white hover:bg-gray-100 text-black font-bold border-2 border-white"
+              className="bg-white hover:bg-gray-100 text-black font-bold border-2 border-white text-xs md:text-sm px-2 md:px-4"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              BACK
+              <ArrowLeft className="w-4 h-4 md:mr-2" />
+              <span className="hidden md:inline">BACK</span>
             </Button>
-            <div className="text-white text-2xl font-bold">HOTEL SELECTION</div>
+            <div className="text-white text-base md:text-2xl font-bold">HOTEL SELECTION</div>
           </div>
           <Button
             onClick={handleContinue}
-            className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold border-2 border-white"
+            className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold border-2 border-white text-xs md:text-sm"
           >
             CONTINUE TO ACTIVITIES →
           </Button>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6">
+      <div className="max-w-7xl mx-auto p-4 md:p-6">
         <div className="flex items-center gap-4 mb-4">
           <Users className="w-5 h-5 text-white" />
           <label className="text-white font-bold">Adults:</label>
@@ -189,17 +188,15 @@ export default function HotelsPage() {
           </Select>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-6">
-          {/* Available Hotels */}
-          <div className="space-y-6">
-            <div className="bg-white border-4 border-black p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white border-4 border-black p-4 md:p-6">
               <h3 className="text-lg font-black text-black mb-4 uppercase flex items-center gap-2">
                 <Hotel className="w-5 h-5" />
                 Available Hotels
               </h3>
 
-              {/* Search & Filter */}
-              <div className="flex gap-2 mb-4">
+              <div className="flex flex-col sm:flex-row gap-2 mb-4">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-black w-5 h-5" />
                   <Input
@@ -222,10 +219,9 @@ export default function HotelsPage() {
                 </Select>
               </div>
 
-              {/* List */}
-              <div className="space-y-3 max-h-96 overflow-y-auto">
-                {getFilteredResults().map((item,index) => (
-                  <div key={item.id+index} className="bg-gray-50 border-2 border-black p-4 flex">
+              <div className="space-y-3 max-h-64 md:max-h-96 overflow-y-auto">
+                {getFilteredResults().map((item, index) => (
+                  <div key={item.id + index} className="bg-gray-50 border-2 border-black p-4 flex">
                     {item.thumbnail && (
                       <img
                         src={item.thumbnail}
@@ -274,8 +270,7 @@ export default function HotelsPage() {
             </div>
           </div>
 
-          {/* Selected Hotels */}
-          <div className="bg-white border-4 border-black p-6">
+          <div className="bg-white border-4 border-black p-4 md:p-6">
             <h3 className="text-lg font-black text-black mb-4 uppercase">Your Selected Hotels</h3>
             {selectedHotels.length > 0 ? (
               <div className="space-y-4">

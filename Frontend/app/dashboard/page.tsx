@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Plane, Sun, Moon, User, LogOut, Zap, MapPin, Bot } from "lucide-react";
+import { Plane, User, LogOut, Zap, MapPin, Bot, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useTheme } from "../providers/theme-provider";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useRouter } from "next/navigation";
 import { useUser } from "../context/UserContext";
 import { useAlert } from "../context/AlertContext";
@@ -37,10 +37,10 @@ const trendingDestinations = [
 ];
 
 export default function DashboardPage() {
-  const { theme, toggleTheme } = useTheme();
   const router = useRouter();
   const { user, loading, setUser } = useUser();
   const { showAlert } = useAlert();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -50,6 +50,7 @@ export default function DashboardPage() {
 
   const handleSignOut = async () => {
     setUser(null);
+    setMobileMenuOpen(false);
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/logout`,
       {
@@ -65,10 +66,10 @@ export default function DashboardPage() {
       return;
     } else {
       await response.json();
-      if(response.status === 200) {
+      if (response.status === 200) {
         showAlert("Signed out successfully", "success", "Logout");
       }
-      else{
+      else {
         showAlert("Error signing out. Please try again");
       }
     }
@@ -83,22 +84,21 @@ export default function DashboardPage() {
   }
 
   if (!user) {
-    return null; // Should redirect by useEffect, but a fallback
+    return null;
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-500 via-red-600 to-orange-500">
-      {/* Header */}
       <div className="bg-black p-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="text-white text-2xl font-bold">GhumoFiro</div>
+            <div className="text-white text-xl md:text-2xl font-bold">GhumoFiro</div>
             <div className="bg-yellow-400 text-black px-2 py-1 text-xs font-bold rounded">
               BETA
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-3">
             <Button
               onClick={() => router.push("/profile")}
               className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold border-2 border-white"
@@ -115,57 +115,83 @@ export default function DashboardPage() {
               SIGN OUT
             </Button>
           </div>
+
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <SheetTrigger asChild className="md:hidden">
+              <Button variant="ghost" size="icon" className="text-white">
+                <Menu className="w-6 h-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="bg-black border-l-2 border-white w-64">
+              <div className="flex flex-col gap-4 mt-8">
+                <Button
+                  onClick={() => {
+                    router.push("/profile");
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold border-2 border-white"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  PROFILE
+                </Button>
+
+                <Button
+                  onClick={handleSignOut}
+                  className="w-full bg-red-600 hover:bg-red-700 text-white font-bold border-2 border-white"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  SIGN OUT
+                </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto p-8">
-        {/* Welcome Message */}
+      <div className="max-w-6xl mx-auto p-4 md:p-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white border-4 border-black p-6 mb-8"
+          className="bg-white border-4 border-black p-4 md:p-6 mb-6 md:mb-8"
         >
-          <p className="text-black font-medium text-xl">
+          <p className="text-black font-medium text-lg md:text-xl">
             Ready to explore the world? Where wanderlust meets adventure, and
             journeys go beyond the ordinary!
           </p>
         </motion.div>
 
-        {/* CTA */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="mb-12"
+          className="mb-8 md:mb-12"
         >
-          <div className="bg-yellow-400 border-4 border-black p-4 text-center mb-8">
-            <p className="text-black font-bold text-lg uppercase tracking-wide">
+          <div className="bg-yellow-400 border-4 border-black p-3 md:p-4 text-center mb-6 md:mb-8">
+            <p className="text-black font-bold text-sm md:text-lg uppercase tracking-wide">
               PACK YOUR BAGS, EXPLORE THE WORLD!!!
             </p>
           </div>
         </motion.div>
 
-        <div className="grid lg:grid-cols-2 gap-8 mb-12">
-          {/* Left Side - Main Heading */}
+        <div className="grid lg:grid-cols-2 gap-6 md:gap-8 mb-8 md:mb-12">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <h1 className="text-6xl lg:text-8xl font-black text-black mb-6 leading-none">
+            <h1 className="text-4xl md:text-6xl lg:text-8xl font-black text-black mb-4 md:mb-6 leading-none">
               FIND YOUR
               <br />
-              PERFECT TRIP <Zap className="inline w-16 h-16 text-yellow-400" />
+              PERFECT TRIP <Zap className="inline w-10 h-10 md:w-16 md:h-16 text-yellow-400" />
             </h1>
 
-            <div className="bg-white border-4 border-black p-6 mb-8">
-              <p className="text-black font-medium text-lg">
+            <div className="bg-white border-4 border-black p-4 md:p-6 mb-6 md:mb-8">
+              <p className="text-black font-medium text-base md:text-lg">
                 Ready to flip the script on traveling? Where adventure meets
                 discovery, and connections go beyond the journey!
               </p>
             </div>
 
-            {/* Welcome with Profile */}
             {user && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -181,21 +207,20 @@ export default function DashboardPage() {
                       className="w-12 h-12 rounded-full border-2 border-black"
                     />
                   )}
-                  <p className="text-black font-bold text-lg">
+                  <p className="text-black font-bold text-base md:text-lg">
                     Welcome back, {user.f_name || "Explorer"}! 🎉
                   </p>
                 </div>
               </motion.div>
             )}
 
-            {/* App Store Button */}
-            <div className="flex items-center gap-4">
-              <div className="bg-black text-white px-6 py-3 font-bold border-2 border-black">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 md:gap-4">
+              <div className="bg-black text-white px-4 md:px-6 py-3 font-bold border-2 border-black text-center sm:text-left">
                 <Plane className="inline w-5 h-5 mr-2" />
                 Download on the App Store
               </div>
               <div className="bg-white border-4 border-black px-4 py-2">
-                <p className="text-black font-medium">
+                <p className="text-black font-medium text-sm md:text-base">
                   Email us at{" "}
                   <span className="text-red-600 font-bold">
                     support@ghumofiro.com
@@ -206,35 +231,34 @@ export default function DashboardPage() {
             </div>
           </motion.div>
 
-          {/* Right Side - Action Cards */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.6 }}
             className="space-y-4"
           >
-            <div className="bg-white border-4 border-black p-6">
+            <div className="bg-white border-4 border-black p-4 md:p-6">
               <Button
                 onClick={() => router.push("/ai-trip-planner")}
-                className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold text-lg h-16 border-2 border-black"
+                className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold text-base md:text-lg h-14 md:h-16 border-2 border-black"
               >
-                <Bot className="w-6 h-6 mr-3" />
+                <Bot className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />
                 AI TRIP PLANNER →
               </Button>
             </div>
 
-            <div className="bg-white border-4 border-black p-6">
+            <div className="bg-white border-4 border-black p-4 md:p-6">
               <Button
                 onClick={() => router.push("/manual-itinerary-builder/setup")}
-                className="w-full bg-red-500 hover:bg-red-600 text-white font-bold text-lg h-16 border-2 border-black"
+                className="w-full bg-red-500 hover:bg-red-600 text-white font-bold text-base md:text-lg h-14 md:h-16 border-2 border-black"
               >
-                <MapPin className="w-6 h-6 mr-3" />
+                <MapPin className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />
                 MANUAL TRIP BUILDER →
               </Button>
             </div>
 
-            <div className="bg-white border-4 border-black p-6">
-              <div className="text-black font-bold text-lg mb-2 uppercase tracking-wide">
+            <div className="bg-white border-4 border-black p-4 md:p-6">
+              <div className="text-black font-bold text-base md:text-lg mb-2 uppercase tracking-wide">
                 TRENDING DESTINATIONS →
               </div>
               <div className="space-y-2">
@@ -244,14 +268,14 @@ export default function DashboardPage() {
                     className="flex justify-between items-center py-2 border-b border-gray-200"
                   >
                     <div>
-                      <div className="font-bold text-black">{dest.name}</div>
-                      <div className="text-sm text-gray-600">
+                      <div className="font-bold text-black text-sm md:text-base">{dest.name}</div>
+                      <div className="text-xs md:text-sm text-gray-600">
                         {dest.description}
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-bold text-black">{dest.budget}</div>
-                      <div className="text-sm text-gray-600">
+                      <div className="font-bold text-black text-sm md:text-base">{dest.budget}</div>
+                      <div className="text-xs md:text-sm text-gray-600">
                         {dest.duration}
                       </div>
                     </div>
@@ -262,33 +286,31 @@ export default function DashboardPage() {
           </motion.div>
         </div>
 
-        {/* Support Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
           className="text-center"
         >
-          <h2 className="text-4xl font-black text-white mb-6">
+          <h2 className="text-2xl md:text-4xl font-black text-white mb-4 md:mb-6">
             NEED HELP OR SUPPORT?
           </h2>
-          <div className="bg-white border-4 border-black p-6 max-w-2xl mx-auto">
-            <p className="text-black font-medium text-lg">
+          <div className="bg-white border-4 border-black p-4 md:p-6 max-w-2xl mx-auto">
+            <p className="text-black font-medium text-base md:text-lg">
               Have questions about GhumoFiro? Need technical support? We're
               here to help you plan the perfect adventure!
             </p>
           </div>
         </motion.div>
 
-        {/* Social Links */}
-        <div className="flex justify-center gap-4 mt-8">
-          <div className="w-12 h-12 bg-white border-2 border-black flex items-center justify-center">
+        <div className="flex justify-center gap-4 mt-6 md:mt-8">
+          <div className="w-10 h-10 md:w-12 md:h-12 bg-white border-2 border-black flex items-center justify-center">
             <span className="text-black font-bold">T</span>
           </div>
-          <div className="w-12 h-12 bg-white border-2 border-black flex items-center justify-center">
+          <div className="w-10 h-10 md:w-12 md:h-12 bg-white border-2 border-black flex items-center justify-center">
             <span className="text-black font-bold">I</span>
           </div>
-          <div className="w-12 h-12 bg-white border-2 border-black flex items-center justify-center">
+          <div className="w-10 h-10 md:w-12 md:h-12 bg-white border-2 border-black flex items-center justify-center">
             <span className="text-black font-bold">L</span>
           </div>
         </div>
