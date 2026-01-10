@@ -1,15 +1,17 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { ArrowLeft, MapPin, Calendar, IndianRupee, Clock } from "lucide-react"
+import { ArrowLeft, MapPin, Calendar, IndianRupee, Clock, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 
 export default function TripSetupPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const [isFromRecommendation, setIsFromRecommendation] = useState(false)
   const [formData, setFormData] = useState({
     source: "",
     destination: "",
@@ -17,6 +19,15 @@ export default function TripSetupPage() {
     startDate: "",
     endDate: "",
   })
+
+  // Pre-fill destination from URL query parameter (from recommendations)
+  useEffect(() => {
+    const destination = searchParams.get('destination')
+    if (destination) {
+      setFormData(prev => ({ ...prev, destination: destination }))
+      setIsFromRecommendation(true)
+    }
+  }, [searchParams])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -108,12 +119,21 @@ export default function TripSetupPage() {
               <Label className="text-black font-bold text-sm md:text-lg uppercase mb-2 block">
                 <MapPin className="w-4 h-4 md:w-5 md:h-5 inline mr-2" />
                 Destination
+                {isFromRecommendation && (
+                  <span className="ml-2 inline-flex items-center gap-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs px-2 py-0.5 rounded-full normal-case font-medium">
+                    <Sparkles className="w-3 h-3" />
+                    From Recommendation
+                  </span>
+                )}
               </Label>
               <Input
                 placeholder="Where are you traveling to?"
                 value={formData.destination}
                 onChange={(e) => handleInputChange("destination", e.target.value)}
-                className="border-2 border-black text-black font-medium h-10 md:h-12 text-sm md:text-lg"
+                className={`border-2 text-black font-medium h-10 md:h-12 text-sm md:text-lg ${isFromRecommendation
+                    ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200'
+                    : 'border-black'
+                  }`}
               />
             </div>
 

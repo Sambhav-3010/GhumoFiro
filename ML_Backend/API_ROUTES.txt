@@ -1,0 +1,62 @@
+# ML_Backend API Routes for Postman
+
+Base URL: http://localhost:5001
+
+## Routes
+
+### 1. Home
+- **Method:** GET
+- **URL:** http://localhost:5001/
+- **Description:** Health check endpoint
+- **Response:** "Hello from the recommendation backend!"
+
+---
+
+### 2. Get City Recommendations
+- **Method:** GET
+- **URL:** http://localhost:5001/recommend_cities?id={user_id}
+- **Description:** Get personalized city recommendations for a user
+- **Parameters:**
+  - `id` (required): MongoDB ObjectId of the user (e.g., 678ec22a0a3afead0dbcd34a)
+- **Example:** http://localhost:5001/recommend_cities?id=678ec22a0a3afead0dbcd34a
+- **Response:**
+```json
+{
+  "user": {
+    "recommendations": {
+      "based_on_similar_age_group": ["mumbai", "delhi", "goa"],
+      "based_on_co_visitation": ["kerala", "rajasthan"],
+      "based_on_same_city": ["jaipur", "udaipur"]
+    }
+  }
+}
+```
+
+---
+
+### 3. Debug Data
+- **Method:** GET
+- **URL:** http://localhost:5001/debug
+- **Description:** View database status and sample data
+- **Response:**
+```json
+{
+  "users_count": 4,
+  "trips_count": 0,
+  "users_columns": ["_id", "f_name", "l_name", "email", ...],
+  "trips_columns": [],
+  "sample_user": {...},
+  "sample_trip": null,
+  "sample_user_places": ["mumbai", "goa"]
+}
+```
+
+---
+
+## Error Responses
+
+| Status Code | Error Message |
+|-------------|---------------|
+| 400 | Missing user ID parameter |
+| 400 | Invalid user ID format |
+| 404 | User ID not found |

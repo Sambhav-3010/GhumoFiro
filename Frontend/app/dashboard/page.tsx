@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Plane, User, LogOut, Zap, MapPin, Bot, Menu, X } from "lucide-react";
+import { Plane, User, LogOut, Zap, MapPin, Bot, Menu, X, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useRouter } from "next/navigation";
 import { useUser } from "../context/UserContext";
 import { useAlert } from "../context/AlertContext";
+import RecommendationSection from "./components/RecommendationSection";
 
 const trendingDestinations = [
   {
@@ -258,32 +259,20 @@ export default function DashboardPage() {
             </div>
 
             <div className="bg-white border-4 border-black p-4 md:p-6">
-              <div className="text-black font-bold text-base md:text-lg mb-2 uppercase tracking-wide">
-                TRENDING DESTINATIONS →
-              </div>
-              <div className="space-y-2">
-                {trendingDestinations.map((dest) => (
-                  <div
-                    key={dest.id}
-                    className="flex justify-between items-center py-2 border-b border-gray-200"
-                  >
-                    <div>
-                      <div className="font-bold text-black text-sm md:text-base">{dest.name}</div>
-                      <div className="text-xs md:text-sm text-gray-600">
-                        {dest.description}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-bold text-black text-sm md:text-base">{dest.budget}</div>
-                      <div className="text-xs md:text-sm text-gray-600">
-                        {dest.duration}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <Button
+                onClick={() => router.push("/travel-history")}
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold text-base md:text-lg h-14 md:h-16 border-2 border-black"
+              >
+                <History className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />
+                VIEW TRAVEL HISTORY →
+              </Button>
             </div>
           </motion.div>
+        </div>
+
+        {/* Personalized Recommendations Section */}
+        <div className="mb-8 md:mb-12">
+          <RecommendationSection />
         </div>
 
         <motion.div

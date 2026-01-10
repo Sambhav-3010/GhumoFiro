@@ -283,7 +283,7 @@ export default function TravelHistoryPage() {
             </div>
           </div>
           <Button
-            onClick={() => router.push("/onboarding")}
+            onClick={() => router.push("/dashboard")}
             className="bg-white hover:bg-gray-100 text-black font-bold border-2 border-white"
           >
             <ArrowLeft className="w-4 h-4 mr-2" /> BACK
@@ -339,11 +339,10 @@ export default function TravelHistoryPage() {
                   <motion.button
                     key={city}
                     onClick={() => addTrip(city)} // Use addTrip
-                    className={`px-4 py-2 text-sm font-bold border-2 border-black uppercase ${
-                      trips.some(t => t.place_of_visit === city) // Check if city is in any trip
+                    className={`px-4 py-2 text-sm font-bold border-2 border-black uppercase ${trips.some(t => t.place_of_visit === city) // Check if city is in any trip
                         ? "bg-yellow-400"
                         : "bg-white"
-                    }`}
+                      }`}
                   >
                     {city}
                   </motion.button>
@@ -373,11 +372,10 @@ export default function TravelHistoryPage() {
                   <motion.button
                     key={country}
                     onClick={() => addTrip(country)} // Use addTrip
-                    className={`px-4 py-2 text-sm font-bold border-2 border-black uppercase ${
-                      trips.some(t => t.place_of_visit === country) // Check if country is in any trip
+                    className={`px-4 py-2 text-sm font-bold border-2 border-black uppercase ${trips.some(t => t.place_of_visit === country) // Check if country is in any trip
                         ? "bg-red-500 text-white"
                         : "bg-white text-black"
-                    }`}
+                      }`}
                   >
                     {country}
                   </motion.button>
@@ -465,7 +463,7 @@ export default function TravelHistoryPage() {
           {/* NAV Buttons */}
           <div className="flex gap-4 pt-8">
             <Button
-              onClick={() => router.push("/onboarding")}
+              onClick={() => router.push("/dashboard")}
               className="flex-1 h-12 bg-white border-2 border-black text-black"
             >
               <ArrowLeft className="ml-2" /> Back

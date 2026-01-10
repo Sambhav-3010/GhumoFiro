@@ -53,7 +53,11 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       );
       if (response.ok) {
         const data = await response.json();
-        setUserState(data);
+        // Map 'id' from backend to '_id' for frontend consistency
+        setUserState({
+          ...data,
+          _id: data.id || data._id,
+        });
       } else {
         console.error(
           "Failed to fetch user data with token:",
