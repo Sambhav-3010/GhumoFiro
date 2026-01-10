@@ -15,6 +15,7 @@ export interface TravelItem {
     arrival: string
     type_flight?: string
     trainNumber?: string
+    link?: string
 }
 
 interface TravelCardProps {
@@ -69,6 +70,16 @@ export function TravelCard({ item, isSelected, onAdd, onRemove, showRemove = fal
                                 <Clock className="w-2.5 h-2.5 md:w-3 md:h-3" />
                                 {item.duration}
                             </span>
+                            {item.link && (
+                                <a
+                                    href={item.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="bg-blue-100 px-1.5 py-0.5 md:px-2 md:py-1 text-[10px] md:text-xs font-bold text-blue-800 hover:underline flex items-center gap-1"
+                                >
+                                    See details
+                                </a>
+                            )}
                             {item.type === "flight" && item.type_flight && (
                                 <span className="bg-blue-100 px-1.5 py-0.5 md:px-2 md:py-1">
                                     {item.type_flight}

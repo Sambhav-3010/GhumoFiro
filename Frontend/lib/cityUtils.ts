@@ -53,6 +53,32 @@ export const getAllCities = (): CityOption[] => {
     return Object.values(uniqueCities).sort((a, b) => a.name.localeCompare(b.name))
 }
 
+export const getAirports = (): CityOption[] => {
+    const cities: CityOption[] = []
+    Object.entries(airports).forEach(([_, airport]) => {
+        if (airport.iata && airport.city) {
+            cities.push({
+                name: capitalizeCity(airport.city),
+                code: airport.iata.toUpperCase(),
+                type: "airport"
+            })
+        }
+    })
+    return cities.sort((a, b) => a.name.localeCompare(b.name))
+}
+
+export const getStations = (): CityOption[] => {
+    const cities: CityOption[] = []
+    Object.entries(stations).forEach(([cityName, station]) => {
+        cities.push({
+            name: capitalizeCity(cityName),
+            code: station.code.toUpperCase(),
+            type: "station"
+        })
+    })
+    return cities.sort((a, b) => a.name.localeCompare(b.name))
+}
+
 export const filterCities = (search: string, allCities: CityOption[]): CityOption[] => {
     if (!search) return allCities.slice(0, 10)
     const lowerSearch = search.toLowerCase()

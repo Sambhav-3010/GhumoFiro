@@ -14,6 +14,7 @@ export interface HotelItem {
     rating: string | number
     amenities: string[]
     location: string
+    link?: string
 }
 
 interface HotelCardProps {
@@ -58,8 +59,20 @@ export function HotelCard({ item, isSelected, onAdd, onRemove, showRemove = fals
                         <MapPin className="w-3 h-3 flex-shrink-0" />
                         {item.location || "Address not available"}
                     </p>
-                    <div className="bg-yellow-400 border border-black px-1.5 py-0.5 md:px-2 md:py-1 text-[10px] md:text-xs font-bold inline-block">
-                        {item.price > 0 ? `₹${item.price.toLocaleString()}` : "N/A"}
+                    <div className="flex flex-wrap gap-2 items-center">
+                        <div className="bg-yellow-400 border border-black px-1.5 py-0.5 md:px-2 md:py-1 text-[10px] md:text-xs font-bold inline-block">
+                            {item.price > 0 ? `₹${item.price.toLocaleString()}` : "N/A"}
+                        </div>
+                        {item.link && (
+                            <a
+                                href={item.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="bg-blue-100 px-1.5 py-0.5 md:px-2 md:py-1 text-[10px] md:text-xs font-bold text-blue-800 hover:underline flex items-center gap-1"
+                            >
+                                See details
+                            </a>
+                        )}
                     </div>
                     {item.amenities?.length > 0 && !showRemove && (
                         <div className="flex flex-wrap gap-1 mt-2">
@@ -83,8 +96,8 @@ export function HotelCard({ item, isSelected, onAdd, onRemove, showRemove = fals
                     <Button
                         onClick={() => onAdd(item)}
                         className={`font-bold border-2 border-black w-8 h-8 md:w-10 md:h-10 p-0 flex-shrink-0 ${isSelected
-                                ? "bg-green-500 text-white"
-                                : "bg-yellow-400 hover:bg-yellow-500 text-black"
+                            ? "bg-green-500 text-white"
+                            : "bg-yellow-400 hover:bg-yellow-500 text-black"
                             }`}
                     >
                         {isSelected ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}

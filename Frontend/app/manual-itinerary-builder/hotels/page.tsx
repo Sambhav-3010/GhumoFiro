@@ -59,6 +59,7 @@ export default function HotelsPage() {
           amenities: ad.amenities || [],
           location: ad.address || "",
           thumbnail: ad.thumbnail || null,
+          link: ad.link || ad.website || ad.google_maps_link || null
         }));
 
         const hotelsFromProps = (data.properties || [])
@@ -72,6 +73,7 @@ export default function HotelsPage() {
             amenities: p.amenities || [],
             location: p.location || "",
             thumbnail: p.images?.[0]?.thumbnail || null,
+            link: p.link || p.website || p.gps_coordinates ? `https://www.google.com/maps/search/?api=1&query=${p.gps_coordinates.latitude},${p.gps_coordinates.longitude}` : (p.name ? `https://www.google.com/search?q=${encodeURIComponent(p.name + " hotel")}` : null)
           }));
 
         setAvailableHotels([...hotelsFromAds, ...hotelsFromProps]);

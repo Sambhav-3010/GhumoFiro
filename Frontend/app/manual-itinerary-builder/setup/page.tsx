@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { MapPin, Calendar, IndianRupee, Clock, Sparkles } from "lucide-react"
+import { MapPin, Calendar, IndianRupee, Clock, Sparkles, Plane, Train } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useRouter, useSearchParams } from "next/navigation"
 import { CityAutocomplete, PageHeader } from "@/components/itinerary"
-import { getAllCities, CityOption } from "@/lib/cityUtils"
+import { getAllCities, getAirports, getStations, CityOption } from "@/lib/cityUtils"
 import { calculateDuration } from "@/lib/formatUtils"
 
 export default function TripSetupPage() {
@@ -26,7 +26,17 @@ export default function TripSetupPage() {
   const [destSearch, setDestSearch] = useState("")
   const [showSourceDropdown, setShowSourceDropdown] = useState(false)
   const [showDestDropdown, setShowDestDropdown] = useState(false)
-  const [allCities] = useState<CityOption[]>(getAllCities)
+  const [travelMode, setTravelMode] = useState<"flight" | "train" | null>(null)
+  const [cityOptions, setCityOptions] = useState<CityOption[]>([])
+
+  const handleModeSelect = (mode: "flight" | "train") => {
+    setTravelMode(mode)
+    if (mode === "flight") {
+      setCityOptions(getAirports())
+    } else {
+      setCityOptions(getStations())
+    }
+  }
 
   const today = new Date().toISOString().split("T")[0]
 
@@ -64,6 +74,7 @@ export default function TripSetupPage() {
         ...formData,
         duration,
         totalSpent: 0,
+        travelMode // Save the selected mode
       }
 
       localStorage.setItem("trip-details", JSON.stringify(tripDetails))
@@ -79,7 +90,7 @@ export default function TripSetupPage() {
     }
   }
 
-  const isFormValid = formData.destination && formData.budget && formData.startDate && formData.endDate
+  const isFormValid = formData.destination && formData.budget && formData.startDate && formData.endDate && travelMode
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-500 via-red-600 to-orange-500">
@@ -100,10 +111,45 @@ export default function TripSetupPage() {
           </div>
 
           <div className="space-y-4 md:space-y-6">
-            <div className="relative">
+            {/* Travel Mode Selection */}
+            <div>
+              <Label className="text-black font-bold text-sm md:text-lg uppercase mb-2 block">
+                Select Mode of Travel <span className="text-red-500">*</span>
+              </Label>
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  onClick={() => {
+                    handleModeSelect("flight")
+                    setSourceSearch("")
+                    setDestSearch("")
+                    setFormData(prev => ({ ...prev, source: "", destination: "" }))
+                  }}
+                  className={`p-4 border-2 border-black flex flex-col items-center justify-center transition-all ${travelMode === "flight" ? "bg-blue-500 text-white" : "bg-white text-black hover:bg-gray-100"
+                    }`}
+                >
+                  <Plane className="w-8 h-8 md:w-10 md:h-10 mb-2" />
+                  <span className="font-bold uppercase">Flight</span>
+                </button>
+                <button
+                  onClick={() => {
+                    handleModeSelect("train")
+                    setSourceSearch("")
+                    setDestSearch("")
+                    setFormData(prev => ({ ...prev, source: "", destination: "" }))
+                  }}
+                  className={`p-4 border-2 border-black flex flex-col items-center justify-center transition-all ${travelMode === "train" ? "bg-orange-500 text-white" : "bg-white text-black hover:bg-gray-100"
+                    }`}
+                >
+                  <Train className="w-8 h-8 md:w-10 md:h-10 mb-2" />
+                  <span className="font-bold uppercase">Train</span>
+                </button>
+              </div>
+            </div>
+
+            <div className={`relative ${!travelMode ? "opacity-50 pointer-events-none" : ""}`}>
               <Label className="text-black font-bold text-sm md:text-lg uppercase mb-2 block">
                 <MapPin className="w-4 h-4 md:w-5 md:h-5 inline mr-2" />
-                Departure City
+                Departure {travelMode === "train" ? "Station" : "City/Airport"}
               </Label>
               <CityAutocomplete
                 value={sourceSearch}
@@ -112,17 +158,17 @@ export default function TripSetupPage() {
                   handleInputChange("source", val)
                 }}
                 onSelect={handleSelectSource}
-                cities={allCities}
-                placeholder="Search city (e.g., Delhi, Mumbai)"
+                cities={cityOptions}
+                placeholder={travelMode === "train" ? "Search station (e.g., NDLS)" : "Search airport (e.g., DEL)"}
                 showDropdown={showSourceDropdown}
                 setShowDropdown={setShowSourceDropdown}
               />
             </div>
 
-            <div className="relative">
+            <div className={`relative ${!travelMode ? "opacity-50 pointer-events-none" : ""}`}>
               <Label className="text-black font-bold text-sm md:text-lg uppercase mb-2 block">
                 <MapPin className="w-4 h-4 md:w-5 md:h-5 inline mr-2" />
-                Destination City
+                Destination {travelMode === "train" ? "Station" : "City/Airport"}
                 {isFromRecommendation && (
                   <span className="ml-2 inline-flex items-center gap-1 bg-purple-500 text-white text-xs px-2 py-0.5 normal-case font-medium">
                     <Sparkles className="w-3 h-3" />
@@ -137,8 +183,8 @@ export default function TripSetupPage() {
                   handleInputChange("destination", val)
                 }}
                 onSelect={handleSelectDest}
-                cities={allCities}
-                placeholder="Search city (e.g., Goa, Jaipur)"
+                cities={cityOptions}
+                placeholder={travelMode === "train" ? "Search station (e.g., BCT)" : "Search airport (e.g., BOM)"}
                 showDropdown={showDestDropdown}
                 setShowDropdown={setShowDestDropdown}
                 className={isFromRecommendation ? 'border-purple-500 bg-purple-50' : ''}

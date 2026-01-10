@@ -33,12 +33,12 @@ app.get("/", (req, res) => {
   res.send(`<html><body><h1>Welcome to GhumoFiro API</h1></body></html>`);
 });
 app.use("/auth", authRoutes);
-app.use("/api", flightsRouter);
+app.use("/api", protect, flightsRouter);
 app.use("/trip", protect, tripRoutes);
 app.use('/gemini', protect, geminiRoutes);
 app.use("/newtrip", protect, tripRoutes);
 app.use("/travelhistory", protect, travelHistoryRoutes);
-app.use("/recommendations", recommendationsRoutes);
+app.use("/recommendations", protect, recommendationsRoutes);
 
 app.use(errorHandler);
 
