@@ -65,6 +65,15 @@ const userSchema = new Schema(
       type: [String],   // <--- missing field
       default: [],
     },
+    recommendations: {
+      based_on_similar_age_group: { type: [String], default: [] },
+      based_on_co_visitation: { type: [String], default: [] },
+      based_on_same_city: { type: [String], default: [] },
+    },
+    recommendationsUpdatedAt: {
+      type: Date,
+      default: null,
+    },
     googleId: {
       type: String,
     },

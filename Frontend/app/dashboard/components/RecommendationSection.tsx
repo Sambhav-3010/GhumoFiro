@@ -92,27 +92,29 @@ export default function RecommendationSection() {
             setError(null);
 
             try {
-                const mlBackendUrl = process.env.NEXT_PUBLIC_ML_BACKEND_URL || "http://localhost:5001";
-                console.log("Fetching recommendations for user:", user._id);
+                // Call Node.js backend which handles caching
+                const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+                console.log("Fetching recommendations (with caching)");
 
                 const response = await fetch(
-                    `${mlBackendUrl}/recommend_cities?id=${user._id}`,
+                    `${backendUrl}/recommendations`,
                     {
                         method: "GET",
                         headers: {
                             "Content-Type": "application/json",
                         },
+                        credentials: "include",
                     }
                 );
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.error || "Failed to fetch recommendations");
+                    throw new Error(errorData.message || "Failed to fetch recommendations");
                 }
 
                 const data = await response.json();
-                console.log("Recommendations received:", data);
-                setRecommendations(data.user.recommendations);
+                console.log("Recommendations received:", data.cached ? "(cached)" : "(fresh)", data);
+                setRecommendations(data.recommendations);
             } catch (err: any) {
                 console.error("Error fetching recommendations:", err);
                 setError(err.message || "Failed to load recommendations");
