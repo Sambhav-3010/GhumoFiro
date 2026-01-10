@@ -2,11 +2,14 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { ArrowLeft, MapPin, Calendar, IndianRupee, Clock, Sparkles } from "lucide-react"
+import { MapPin, Calendar, IndianRupee, Clock, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useRouter, useSearchParams } from "next/navigation"
+import { CityAutocomplete, PageHeader } from "@/components/itinerary"
+import { getAllCities, CityOption } from "@/lib/cityUtils"
+import { calculateDuration } from "@/lib/formatUtils"
 
 export default function TripSetupPage() {
   const router = useRouter()
@@ -19,12 +22,19 @@ export default function TripSetupPage() {
     startDate: "",
     endDate: "",
   })
+  const [sourceSearch, setSourceSearch] = useState("")
+  const [destSearch, setDestSearch] = useState("")
+  const [showSourceDropdown, setShowSourceDropdown] = useState(false)
+  const [showDestDropdown, setShowDestDropdown] = useState(false)
+  const [allCities] = useState<CityOption[]>(getAllCities)
 
-  // Pre-fill destination from URL query parameter (from recommendations)
+  const today = new Date().toISOString().split("T")[0]
+
   useEffect(() => {
     const destination = searchParams.get('destination')
     if (destination) {
       setFormData(prev => ({ ...prev, destination: destination }))
+      setDestSearch(destination)
       setIsFromRecommendation(true)
     }
   }, [searchParams])
@@ -33,36 +43,37 @@ export default function TripSetupPage() {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const calculateDuration = () => {
-    if (formData.startDate && formData.endDate) {
-      const start = new Date(formData.startDate)
-      const end = new Date(formData.endDate)
-      const diffTime = Math.abs(end.getTime() - start.getTime())
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-      return diffDays
-    }
-    return 0
+  const handleSelectSource = (city: CityOption) => {
+    setFormData(prev => ({ ...prev, source: city.name }))
+    setSourceSearch(`${city.name} (${city.code})`)
+    setShowSourceDropdown(false)
   }
+
+  const handleSelectDest = (city: CityOption) => {
+    setFormData(prev => ({ ...prev, destination: city.name }))
+    setDestSearch(`${city.name} (${city.code})`)
+    setShowDestDropdown(false)
+    setIsFromRecommendation(false)
+  }
+
+  const duration = calculateDuration(formData.startDate, formData.endDate)
 
   const handleSubmit = () => {
     if (formData.destination && formData.budget && formData.startDate && formData.endDate) {
       const tripDetails = {
         ...formData,
-        duration: calculateDuration(),
+        duration,
         totalSpent: 0,
       }
 
       localStorage.setItem("trip-details", JSON.stringify(tripDetails))
       localStorage.setItem("trip-progress", JSON.stringify([]))
-      localStorage.setItem(
-        "trip-selections",
-        JSON.stringify({
-          travel: [],
-          hotels: [],
-          activities: [],
-          dining: [],
-        }),
-      )
+      localStorage.setItem("trip-selections", JSON.stringify({
+        travel: [],
+        hotels: [],
+        activities: [],
+        dining: [],
+      }))
 
       router.push("/manual-itinerary-builder")
     }
@@ -72,20 +83,7 @@ export default function TripSetupPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-500 via-red-600 to-orange-500">
-      <div className="bg-black p-3 md:p-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2 md:gap-4">
-            <Button
-              onClick={() => router.push("/dashboard")}
-              className="bg-white hover:bg-gray-100 text-black font-bold border-2 border-white text-xs md:text-sm px-2 md:px-4"
-            >
-              <ArrowLeft className="w-4 h-4 md:mr-2" />
-              <span className="hidden md:inline">BACK</span>
-            </Button>
-            <div className="text-white text-base md:text-2xl font-bold">TRIP SETUP</div>
-          </div>
-        </div>
-      </div>
+      <PageHeader title="TRIP SETUP" backPath="/dashboard" />
 
       <div className="max-w-2xl mx-auto p-4 md:p-8">
         <motion.div
@@ -102,38 +100,48 @@ export default function TripSetupPage() {
           </div>
 
           <div className="space-y-4 md:space-y-6">
-            <div>
+            <div className="relative">
               <Label className="text-black font-bold text-sm md:text-lg uppercase mb-2 block">
                 <MapPin className="w-4 h-4 md:w-5 md:h-5 inline mr-2" />
-                Departure
+                Departure City
               </Label>
-              <Input
-                placeholder="Where are you traveling from?"
-                value={formData.source}
-                onChange={(e) => handleInputChange("source", e.target.value)}
-                className="border-2 border-black text-black font-medium h-10 md:h-12 text-sm md:text-lg"
+              <CityAutocomplete
+                value={sourceSearch}
+                onChange={(val) => {
+                  setSourceSearch(val)
+                  handleInputChange("source", val)
+                }}
+                onSelect={handleSelectSource}
+                cities={allCities}
+                placeholder="Search city (e.g., Delhi, Mumbai)"
+                showDropdown={showSourceDropdown}
+                setShowDropdown={setShowSourceDropdown}
               />
             </div>
 
-            <div>
+            <div className="relative">
               <Label className="text-black font-bold text-sm md:text-lg uppercase mb-2 block">
                 <MapPin className="w-4 h-4 md:w-5 md:h-5 inline mr-2" />
-                Destination
+                Destination City
                 {isFromRecommendation && (
-                  <span className="ml-2 inline-flex items-center gap-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs px-2 py-0.5 rounded-full normal-case font-medium">
+                  <span className="ml-2 inline-flex items-center gap-1 bg-purple-500 text-white text-xs px-2 py-0.5 normal-case font-medium">
                     <Sparkles className="w-3 h-3" />
                     From Recommendation
                   </span>
                 )}
               </Label>
-              <Input
-                placeholder="Where are you traveling to?"
-                value={formData.destination}
-                onChange={(e) => handleInputChange("destination", e.target.value)}
-                className={`border-2 text-black font-medium h-10 md:h-12 text-sm md:text-lg ${isFromRecommendation
-                    ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200'
-                    : 'border-black'
-                  }`}
+              <CityAutocomplete
+                value={destSearch}
+                onChange={(val) => {
+                  setDestSearch(val)
+                  handleInputChange("destination", val)
+                }}
+                onSelect={handleSelectDest}
+                cities={allCities}
+                placeholder="Search city (e.g., Goa, Jaipur)"
+                showDropdown={showDestDropdown}
+                setShowDropdown={setShowDestDropdown}
+                className={isFromRecommendation ? 'border-purple-500 bg-purple-50' : ''}
               />
             </div>
 
@@ -159,6 +167,7 @@ export default function TripSetupPage() {
                 </Label>
                 <Input
                   type="date"
+                  min={today}
                   value={formData.startDate}
                   onChange={(e) => handleInputChange("startDate", e.target.value)}
                   className="border-2 border-black text-black font-medium h-10 md:h-12"
@@ -171,6 +180,7 @@ export default function TripSetupPage() {
                 </Label>
                 <Input
                   type="date"
+                  min={formData.startDate || today}
                   value={formData.endDate}
                   onChange={(e) => handleInputChange("endDate", e.target.value)}
                   className="border-2 border-black text-black font-medium h-10 md:h-12"
@@ -178,12 +188,12 @@ export default function TripSetupPage() {
               </div>
             </div>
 
-            {calculateDuration() > 0 && (
+            {duration > 0 && (
               <div className="bg-yellow-400 border-2 border-black p-3 md:p-4">
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 md:w-5 md:h-5 text-black" />
                   <span className="text-black font-bold text-sm md:text-lg uppercase">
-                    Trip Duration: {calculateDuration()} Days
+                    Trip Duration: {duration} Days
                   </span>
                 </div>
               </div>
@@ -199,6 +209,16 @@ export default function TripSetupPage() {
           </div>
         </motion.div>
       </div>
+
+      {(showSourceDropdown || showDestDropdown) && (
+        <div
+          className="fixed inset-0 z-10"
+          onClick={() => {
+            setShowSourceDropdown(false)
+            setShowDestDropdown(false)
+          }}
+        />
+      )}
     </div>
   )
 }

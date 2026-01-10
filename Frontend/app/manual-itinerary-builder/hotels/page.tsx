@@ -1,9 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { ArrowLeft, Hotel, Plus, Search, Star, Users } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Hotel, Search, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -13,24 +11,8 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
-
-interface HotelItem {
-  thumbnail?: string | null;
-  id: string;
-  title: string;
-  description?: string;
-  price: number;
-  rating: string | number;
-  amenities: string[];
-  location: string;
-}
-
-
-const parsePrice = (val: any): number => {
-  if (typeof val === "number") return val;
-  if (!val) return 0;
-  return Number(val.toString().replace(/[^0-9.]/g, "")) || 0;
-};
+import { PageHeader, HotelList, LoadingSpinner, HotelItem } from "@/components/itinerary";
+import { parsePrice } from "@/lib/formatUtils";
 
 export default function HotelsPage() {
   const router = useRouter();
@@ -39,46 +21,37 @@ export default function HotelsPage() {
   const [priceRange, setPriceRange] = useState<"all" | "budget" | "mid" | "luxury">("all");
   const [availableHotels, setAvailableHotels] = useState<HotelItem[]>([]);
   const [adults, setAdults] = useState<number>(1);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("hotel-selections");
-    if (saved) {
-      setSelectedHotels(JSON.parse(saved));
-    }
+    if (saved) setSelectedHotels(JSON.parse(saved));
   }, []);
 
   useEffect(() => {
     const fetchHotels = async () => {
+      setLoading(true);
       try {
         const saved = JSON.parse(localStorage.getItem("trip-details") || "{}");
-        if (!saved.destination || !saved.startDate || !saved.endDate) {
-          console.warn("Missing hotel search criteria");
-          return;
-        }
-
-        const requestBody = {
-          q: saved.destination,
-          check_in_date: saved.startDate,
-          check_out_date: saved.endDate,
-          adults: adults.toString(),
-        };
+        if (!saved.destination || !saved.startDate || !saved.endDate) return;
 
         const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/hotels`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(requestBody),
+          body: JSON.stringify({
+            q: saved.destination,
+            check_in_date: saved.startDate,
+            check_out_date: saved.endDate,
+            adults: adults.toString(),
+          }),
           credentials: "include"
         });
 
-        if (!response.ok) {
-          console.error("Failed hotel fetch:", await response.text());
-          return;
-        }
-
+        if (!response.ok) return;
         const data = await response.json();
 
         const hotelsFromAds = (data.ads || []).map((ad: any) => ({
-          id: ad.name || ad.property_token,
+          id: ad.name || ad.property_token || Math.random().toString(),
           title: ad.name || "Unknown Hotel",
           description: ad.description || "",
           price: parsePrice(ad.price || ad.rate_per_night?.lowest),
@@ -91,7 +64,7 @@ export default function HotelsPage() {
         const hotelsFromProps = (data.properties || [])
           .filter((p: any) => p.type === "hotel")
           .map((p: any) => ({
-            id: p.name || p.property_token,
+            id: p.name || p.property_token || Math.random().toString(),
             title: p.name || "Unknown Hotel",
             description: p.description || "",
             price: parsePrice(p.rate_per_night?.lowest || p.total_rate?.lowest),
@@ -104,6 +77,8 @@ export default function HotelsPage() {
         setAvailableHotels([...hotelsFromAds, ...hotelsFromProps]);
       } catch (err) {
         console.error("Error fetching hotels:", err);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -145,162 +120,106 @@ export default function HotelsPage() {
     });
   };
 
-  const handleContinue = () => {
-    router.push("/manual-itinerary-builder/activities");
-  };
+  const totalCost = selectedHotels.reduce((sum, h) => sum + h.price, 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-500 via-red-600 to-orange-500">
-      <div className="bg-black p-3 md:p-4">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2 md:gap-4">
-            <Button
-              onClick={() => router.push("/manual-itinerary-builder")}
-              className="bg-white hover:bg-gray-100 text-black font-bold border-2 border-white text-xs md:text-sm px-2 md:px-4"
-            >
-              <ArrowLeft className="w-4 h-4 md:mr-2" />
-              <span className="hidden md:inline">BACK</span>
-            </Button>
-            <div className="text-white text-base md:text-2xl font-bold">HOTEL SELECTION</div>
-          </div>
-          <Button
-            onClick={handleContinue}
-            className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold border-2 border-white text-xs md:text-sm"
-          >
-            CONTINUE TO ACTIVITIES →
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title="HOTEL SELECTION"
+        backPath="/manual-itinerary-builder"
+        rightButton={{ label: "CONTINUE TO ACTIVITIES →", onClick: () => router.push("/manual-itinerary-builder/activities") }}
+      />
 
-      <div className="max-w-7xl mx-auto p-4 md:p-6">
-        <div className="flex items-center gap-4 mb-4">
-          <Users className="w-5 h-5 text-white" />
-          <label className="text-white font-bold">Adults:</label>
-          <Select value={adults.toString()} onValueChange={(val: string) => setAdults(parseInt(val))}>
-            <SelectTrigger className="w-24 border-2 border-black bg-white font-bold">
-              <SelectValue placeholder={adults.toString()} />
-            </SelectTrigger>
-            <SelectContent>
-              {[1, 2, 3, 4, 5, 6].map((num) => (
-                <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      <div className="max-w-7xl mx-auto p-3 md:p-6">
+        <div className="bg-white border-4 border-black p-3 md:p-4 mb-4 md:mb-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+            <Users className="w-5 h-5 text-black hidden sm:block" />
+            <label className="text-black font-bold text-sm md:text-base">Number of Adults:</label>
+            <Select value={adults.toString()} onValueChange={(val: string) => setAdults(parseInt(val))}>
+              <SelectTrigger className="w-20 md:w-24 border-2 border-black bg-white font-bold text-sm">
+                <SelectValue placeholder={adults.toString()} />
+              </SelectTrigger>
+              <SelectContent>
+                {[1, 2, 3, 4, 5, 6].map((num) => (
+                  <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-          <div className="space-y-4 md:space-y-6">
-            <div className="bg-white border-4 border-black p-4 md:p-6">
-              <h3 className="text-lg font-black text-black mb-4 uppercase flex items-center gap-2">
-                <Hotel className="w-5 h-5" />
-                Available Hotels
-              </h3>
+          <div className="bg-white border-4 border-black p-4 md:p-6">
+            <h3 className="text-base md:text-lg font-black text-black mb-4 uppercase flex items-center gap-2">
+              <Hotel className="w-4 h-4 md:w-5 md:h-5" />
+              Available Hotels
+            </h3>
 
-              <div className="flex flex-col sm:flex-row gap-2 mb-4">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-black w-5 h-5" />
-                  <Input
-                    placeholder="SEARCH HOTELS..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 border-2 border-black font-bold"
-                  />
+            <div className="flex flex-col sm:flex-row gap-2 mb-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 md:w-5 md:h-5" />
+                <Input
+                  placeholder="SEARCH HOTELS..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 md:pl-10 border-2 border-black font-bold text-sm"
+                />
+              </div>
+              <Select value={priceRange} onValueChange={(value: any) => setPriceRange(value)}>
+                <SelectTrigger className="w-full sm:w-32 md:w-36 border-2 border-black font-bold text-sm">
+                  <SelectValue placeholder="Filter" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">ALL</SelectItem>
+                  <SelectItem value="budget">BUDGET</SelectItem>
+                  <SelectItem value="mid">MID</SelectItem>
+                  <SelectItem value="luxury">LUXURY</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {loading && <LoadingSpinner message="Loading hotels..." color="text-green-500" />}
+
+            <div className="max-h-[50vh] md:max-h-96 overflow-y-auto">
+              <HotelList
+                items={getFilteredResults()}
+                selectedTitles={selectedHotels.map(h => h.title)}
+                onAdd={handleAddHotel}
+              />
+              {!loading && availableHotels.length === 0 && (
+                <div className="text-center py-8">
+                  <Hotel className="w-12 h-12 md:w-16 md:h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-600 font-bold text-sm md:text-base">No hotels found</p>
                 </div>
-                <Select value={priceRange} onValueChange={(value: any) => setPriceRange(value)}>
-                  <SelectTrigger className="w-32 border-2 border-black font-bold">
-                    <SelectValue placeholder="Filter" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">ALL</SelectItem>
-                    <SelectItem value="budget">BUDGET (&lt;4K)</SelectItem>
-                    <SelectItem value="mid">MID (4K–10K)</SelectItem>
-                    <SelectItem value="luxury">LUXURY (&gt;10K)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-3 max-h-64 md:max-h-96 overflow-y-auto">
-                {getFilteredResults().map((item, index) => (
-                  <div key={item.id + index} className="bg-gray-50 border-2 border-black p-4 flex">
-                    {item.thumbnail && (
-                      <img
-                        src={item.thumbnail}
-                        alt={item.title}
-                        className="w-20 h-20 object-cover border border-black mr-3"
-                      />
-                    )}
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-black text-black uppercase">{item.title}</h4>
-                        <div className="flex items-center gap-1">
-                          <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                          <span className="text-xs font-bold">
-                            {item.rating && item.rating !== 0 ? item.rating : "Unrated"}
-                          </span>
-                        </div>
-                      </div>
-                      <p className="text-xs text-gray-600 font-bold mb-1">
-                        📍 {item.location || "Address not available"}
-                      </p>
-                      <div className="bg-yellow-400 border border-black px-2 py-1 text-xs font-bold inline-block mb-2">
-                        {item.price > 0 ? `₹${item.price.toLocaleString()}` : "Price Not Available"}
-                      </div>
-                      {item.amenities.length > 0 && (
-                        <div className="flex flex-wrap gap-1">
-                          {item.amenities.map((a) => (
-                            <span
-                              key={a}
-                              className="bg-blue-100 text-xs px-2 py-1 border border-blue-300 font-bold"
-                            >
-                              {a}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <Button
-                      onClick={() => handleAddHotel(item)}
-                      className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold border-2 border-black ml-4"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
+              )}
             </div>
           </div>
 
           <div className="bg-white border-4 border-black p-4 md:p-6">
-            <h3 className="text-lg font-black text-black mb-4 uppercase">Your Selected Hotels</h3>
+            <h3 className="text-base md:text-lg font-black text-black mb-4 uppercase">Your Selected Hotels</h3>
+
             {selectedHotels.length > 0 ? (
-              <div className="space-y-4">
-                {selectedHotels.map((item) => (
-                  <motion.div
-                    key={item.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-gray-50 border-2 border-black p-4"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h4 className="font-black text-black uppercase">{item.title}</h4>
-                        <p className="text-xs text-gray-600 font-bold mb-1">📍 {item.location}</p>
-                        <div className="bg-yellow-400 border border-black px-2 py-1 text-xs font-bold">
-                          {item.price > 0 ? `₹${item.price.toLocaleString()}` : "Price Not Available"}
-                        </div>
-                      </div>
-                      <Button
-                        onClick={() => handleRemoveHotel(item.id)}
-                        className="bg-red-500 hover:bg-red-600 text-white font-bold border-2 border-black w-8 h-8 p-0"
-                      >
-                        ×
-                      </Button>
-                    </div>
-                  </motion.div>
-                ))}
+              <div className="space-y-3 md:space-y-4">
+                <HotelList
+                  items={selectedHotels}
+                  selectedTitles={selectedHotels.map(h => h.title)}
+                  onAdd={() => { }}
+                  onRemove={handleRemoveHotel}
+                  showRemove
+                />
+                <div className="pt-3 md:pt-4 border-t-2 border-black">
+                  <div className="flex justify-between items-center">
+                    <span className="text-black font-bold uppercase text-sm md:text-base">Total Hotel Cost:</span>
+                    <span className="text-lg md:text-xl font-black text-black">₹{totalCost.toLocaleString()}</span>
+                  </div>
+                </div>
               </div>
             ) : (
-              <div className="text-center py-8">No hotels selected yet.</div>
+              <div className="text-center py-8 md:py-12">
+                <Hotel className="w-12 h-12 md:w-16 md:h-16 text-gray-400 mx-auto mb-4" />
+                <p className="text-black font-bold uppercase text-sm md:text-base">No hotels selected yet</p>
+                <p className="text-gray-600 text-xs md:text-sm">Choose from available options</p>
+              </div>
             )}
           </div>
         </div>

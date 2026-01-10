@@ -25,7 +25,7 @@ interface RecommendationCategory {
 const categories: RecommendationCategory[] = [
     {
         key: "based_on_similar_age_group",
-        title: "🔥 Trending For You",
+        title: "Trending For You",
         subtitle: "Popular among your age group",
         icon: TrendingUp,
         gradient: "from-orange-500 to-yellow-500",
@@ -33,7 +33,7 @@ const categories: RecommendationCategory[] = [
     },
     {
         key: "based_on_co_visitation",
-        title: "✨ You Might Also Like",
+        title: "You Might Also Like",
         subtitle: "Places travelers like you visited",
         icon: Sparkles,
         gradient: "from-purple-500 to-pink-500",
@@ -41,9 +41,9 @@ const categories: RecommendationCategory[] = [
     },
     {
         key: "based_on_same_city",
-        title: "📍 Popular Nearby",
+        title: "Popular Nearby",
         subtitle: "Favorites from your city",
-        icon: Users,
+        icon: MapPin,
         gradient: "from-blue-500 to-cyan-500",
         category: "same_city",
     },
@@ -72,17 +72,15 @@ function LoadingSkeleton() {
 export default function RecommendationSection() {
     const { user, loading: userLoading } = useUser();
     const [recommendations, setRecommendations] = useState<Recommendations | null>(null);
-    const [loading, setLoading] = useState(true); // Start as true to show loading initially
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchRecommendations = async () => {
-            // Still waiting for user context
             if (userLoading) {
                 return;
             }
 
-            // No user logged in
             if (!user?._id) {
                 setLoading(false);
                 return;
@@ -92,9 +90,7 @@ export default function RecommendationSection() {
             setError(null);
 
             try {
-                // Call Node.js backend which handles caching
                 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
-                console.log("Fetching recommendations (with caching)");
 
                 const response = await fetch(
                     `${backendUrl}/recommendations`,
@@ -113,7 +109,6 @@ export default function RecommendationSection() {
                 }
 
                 const data = await response.json();
-                console.log("Recommendations received:", data.cached ? "(cached)" : "(fresh)", data);
                 setRecommendations(data.recommendations);
             } catch (err: any) {
                 console.error("Error fetching recommendations:", err);

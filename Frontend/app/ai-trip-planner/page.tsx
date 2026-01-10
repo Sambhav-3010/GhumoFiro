@@ -28,7 +28,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet"
 import { useRouter } from "next/navigation"
 
 interface Message {
@@ -308,18 +308,25 @@ export default function AITripPlannerPage() {
                     <Menu className="w-5 h-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="bg-black border-l-2 border-white w-64">
-                  <div className="flex flex-col gap-4 mt-8">
-                    <Button
-                      onClick={() => {
-                        setShowCollabDialog(true);
-                        setMobileMenuOpen(false);
-                      }}
-                      className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold border-2 border-white"
-                    >
-                      <Share2 className="w-4 h-4 mr-2" />
-                      COLLABORATE
-                    </Button>
+                <SheetContent side="right" className="bg-yellow-400 border-l-4 border-black w-72 p-0">
+                  <SheetTitle className="sr-only">Mobile Menu</SheetTitle>
+                  <SheetDescription className="sr-only">Navigation menu for mobile users</SheetDescription>
+                  <div className="h-full flex flex-col p-6">
+                    <div className="mb-8 border-b-4 border-black pb-4">
+                      <h2 className="text-3xl font-black text-black uppercase tracking-tighter">Menu</h2>
+                    </div>
+                    <div className="flex flex-col gap-4">
+                      <Button
+                        onClick={() => {
+                          setShowCollabDialog(true);
+                          setMobileMenuOpen(false);
+                        }}
+                        className="w-full bg-white hover:bg-gray-50 text-black font-black text-lg border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all h-12"
+                      >
+                        <Share2 className="w-5 h-5 mr-3" />
+                        COLLABORATE
+                      </Button>
+                    </div>
                   </div>
                 </SheetContent>
               </Sheet>
