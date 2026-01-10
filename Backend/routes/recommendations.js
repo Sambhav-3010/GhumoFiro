@@ -40,9 +40,8 @@ router.get(
             });
         }
 
-        // Cache expired or empty - fetch fresh recommendations from ML backend
         try {
-            const mlBackendUrl = process.env.ML_BACKEND_URL || "http://localhost:5001";
+            const mlBackendUrl = process.env.NEXT_PUBLIC_ML_BACKEND_URL;
             const mlResponse = await fetch(
                 `${mlBackendUrl}/recommend_cities?id=${user._id}`
             );

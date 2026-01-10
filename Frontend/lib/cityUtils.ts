@@ -1,5 +1,5 @@
 import airportsData from "@/components/airport.json"
-import stationsData from "@/components/stations.json"
+import stationsData from "@/components/railway.json"
 
 export interface CityOption {
     name: string
@@ -8,7 +8,11 @@ export interface CityOption {
 }
 
 const airports = airportsData as Record<string, { city: string; iata: string | null; name: string }>
-const stations = stationsData as Record<string, { code: string; name: string }>
+const stationsList = (stationsData as { data: { name: string; code: string }[] }).data
+const stations = stationsList.reduce((acc, curr) => {
+    acc[curr.name] = { code: curr.code, name: curr.name }
+    return acc
+}, {} as Record<string, { code: string; name: string }>)
 
 const capitalizeCity = (str: string): string => {
     return str

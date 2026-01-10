@@ -83,26 +83,67 @@ export default function TravelPage() {
 
         const fromCode = getStationCodeByName(saved.source);
         const toCode = getStationCodeByName(saved.destination);
-        if (!fromCode || !toCode) return;
 
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/trains?from=${fromCode}&to=${toCode}`,
-          { method: "GET", credentials: "include" }
-        );
+        // If no station codes found, we might want to show an error or return
+        // Ideally the setup page should have captured this, but we can try searching with city names or return
+        // For now, assuming if one is missing, we can't search trains effectively with the new API expectation
+        // Note: The new backend /trains expects from, to, date in body
+
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/serp/trains`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            from: saved.source, // Using city names as per user request example
+            to: saved.destination,
+            date: saved.startDate
+          }),
+          credentials: "include"
+        });
 
         const data = await response.json();
-        if (response.ok && data?.data) {
-          setSampleTrains(data.data.slice(0, 10).map((train: any, index: number) => ({
-            id: `train-${index}`,
-            type: "train",
-            title: `${train.from_station_name || train.from} → ${train.to_station_name || train.to}`,
-            description: `${train.train_name || "Train"} (${train.train_number || ""})`,
-            price: "₹500 - ₹2000",
-            duration: `${train.duration || "N/A"}`,
-            departure: train.from_station_name || train.from || "Unknown",
-            arrival: train.to_station_name || train.to || "Unknown",
-            trainNumber: train.train_number,
-          })));
+        if (response.ok && data?.trains) {
+          const trainsWithFares = await Promise.all(data.trains.slice(0, 10).map(async (train: any, index: number) => {
+            // Extract train number from title or snippet if possible, else we can't fetch fare
+            // The snippets usually look like "New Delhi to Mumbai Central Train... 12926 Paschim SF Express..."
+            const trainNumMatch = train.snippet.match(/(\d{5})/);
+            let farePrice = "Check availability";
+
+            if (trainNumMatch) {
+              // Fetch fare for this train
+              try {
+                const fareRes = await fetch(
+                  `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/serp/trainfare?trainno=${trainNumMatch[0]}&from=${encodeURIComponent(saved.source)}&to=${encodeURIComponent(saved.destination)}&date=${encodeURIComponent(saved.startDate)}`,
+                  { method: "GET", credentials: "include" }
+                );
+                const fareData = await fareRes.json();
+                if (fareRes.ok && fareData.fareInfo) {
+                  // Extracting price range from snippet if possible, simplistic approach
+                  const fareText = fareData.fareInfo.find((info: any) => info.type === 'paragraph')?.snippet || "";
+                  const prices = fareText.match(/₹[\d,]+/g);
+                  if (prices && prices.length > 0) {
+                    farePrice = `${prices[0]}${prices.length > 1 ? ' - ' + prices[prices.length - 1] : ''}`;
+                  } else {
+                    farePrice = "View Details";
+                  }
+                }
+              } catch (e) {
+                console.error("Error fetching fare for train", trainNumMatch[0], e);
+              }
+            }
+
+            return {
+              id: `train-${index}`,
+              type: "train",
+              title: train.title,
+              description: train.snippet,
+              price: farePrice,
+              duration: "See details", // Duration parsing would be complex from snippet
+              departure: saved.source,
+              arrival: saved.destination,
+              link: train.link
+            };
+          }));
+          setSampleTrains(trainsWithFares);
         }
       } catch (error) {
         console.error("Error fetching trains:", error);
