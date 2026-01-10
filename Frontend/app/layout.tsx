@@ -14,6 +14,9 @@ export const metadata: Metadata = {
   description:
     "Plan amazing trips with AI assistance and connect with fellow travelers",
   generator: "v0.dev",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
