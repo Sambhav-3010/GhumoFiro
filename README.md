@@ -1,4 +1,4 @@
-# GhumoFiro 🌍✈️
+# GhumoFiro
 
 **The Ultimate AI-Powered Travel Companion**
 
@@ -8,29 +8,29 @@ Whether you want to meticulously craft every detail of your journey or let AI ge
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
-### 🧠 AI-Powered Itinerary Generation
+### AI-Powered Itinerary Generation
 - **Smart Planning**: Utilizes Google's **Gemini 2.5** model to generate detailed, day-by-day itineraries based on simple user prompts.
 - **Context Aware**: Understands destination, budget, duration, and travel style to create perfectly tailored plans.
 - **Automated Structuring**: Returns data in a strict JSON schema, ensuring consistent UI rendering for flights, hotels, activities, and dining.
 
-### 🔍 Real-Time Data Integration
+### Real-Time Data Integration
 - **Live Flight Prices**: Integrates **SerpAPI (Google Flights Engine)** to fetch real-time flight options, prices, and schedules.
 - **Dynamic Suggestions**: "See Details" feature pulls current information for recommended places and activities.
 
-### 🛠️ Hybrid Planning System
+### Hybrid Planning System
 - **Manual Override**: Users can edit, add, or remove items from AI-generated plans.
 - **Drag & Drop**: Intuitive UI for rearranging activities and days.
 - **Collab Mode**: (Planned) Share itineraries with friends and plan together.
 
-### 🤖 ML-Driven Recommendations
+### ML-Driven Recommendations
 - **Collaborative Filtering**: Custom recommendation engine suggests destinations based on similar user profiles.
 - **Behavioral Analysis**: Analyzes past trips and user preferences to surface hidden gems.
 
 ---
 
-## 🏗️ Tech Stack
+## Tech Stack
 
 ### Frontend
 - **Framework**: [Next.js 14](https://nextjs.org/) (App Directory)
@@ -51,7 +51,7 @@ Whether you want to meticulously craft every detail of your journey or let AI ge
 
 ---
 
-## ⚙️ Architecture
+## Architecture
 
 GhumoFiro operates on a modular architecture:
 1.  **Next.js Client**: Handles all user interactions, itinerary rendering, and state management.
@@ -60,7 +60,7 @@ GhumoFiro operates on a modular architecture:
 
 ---
 
-## 🏃‍♂️ Getting Started
+## Getting Started
 
 ### Prerequisites
 - Node.js (v18+)
@@ -101,7 +101,7 @@ GhumoFiro operates on a modular architecture:
 
 ---
 
-## 🔮 Future Roadmap
+## Future Roadmap
 - [ ] Real-time collaboration via WebSockets (Socket.io).
 - [ ] Direct booking integration for flights and hotels.
 - [ ] AR View for exploring destinations.
